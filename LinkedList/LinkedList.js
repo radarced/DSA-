@@ -114,6 +114,18 @@ class LinkedList
     return this.last;
   }
 
+  // node setting functions
+
+  // sets the nodes data at the given index to the given value
+  set(index,value)
+  {
+      let correspondingNode = this.getNode(index);
+      if(correspondingNode !== undefined)
+      { // meaning it does exist
+        correspondingNode.data = value;
+      }
+  }
+
   // traversing functions
 
   // returns the value of the node at the given index or undefined.
@@ -136,7 +148,7 @@ class LinkedList
     { 
         if(currentIndex === index)
         {
-          return currentPointer.value;
+          return currentPointer.data;
         }
 
         currentPointer = currentPointer.next;
@@ -191,6 +203,56 @@ class LinkedList
     }
 
     return -1;
+  }
+
+  getNode(index)
+  {
+    if(this.empty)
+    {
+      return undefined;
+    }
+    if(!inRange(index,this.size() - 1))
+    {
+      console.log("the given index is out of range of the list");
+      return undefined;
+    }
+    
+    let currentPointer = this.first;
+    let currentIndex = 0;
+    
+    while(currentPointer !== null)
+    { 
+        if(currentIndex === index)
+        {
+          return currentPointer;
+        }
+
+        currentPointer = currentPointer.next;
+        currentIndex++;
+    }
+
+    return undefined; // if an floating number was given this would run as well as other incompatible types ;-; . 
+  
+  }
+
+  // return all the nodes inside the linked list in an ordered array.
+  toArray()
+  {
+    if(this.empty)
+    {
+      return []; 
+    }
+  
+    let currentPointer = this.first;
+    let resultantArr = [];
+
+    while(currentPointer !== null)
+    {
+      resultantArr.push(currentPointer);
+  
+      currentPointer = currentPointer.next;
+    }
+    return resultantArr;
   }
 
   toString()
@@ -317,6 +379,14 @@ class LinkedList
    // the item preceding the node to be deleted needs to reference the successing item of the node to be deleted 
     precedingPointer.next = currentPointer.next;
     this.listSize--;
+  }
+
+  removeAll()
+  { // garbage collector does the heavy lifting.
+    this.first = null;
+    this.last = null;
+    this.empty = true;
+    this.listSize = 0;
   }
 
 }
