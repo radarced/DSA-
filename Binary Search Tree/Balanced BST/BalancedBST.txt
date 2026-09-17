@@ -1,0 +1,38 @@
+this text contains info on the implementation .
+- i chooes to build the AVL self balancing bst .
+
+the avl bst is essentially a self balancing bst which keeps track of the height of the nodes
+for the rebalancing in contrary to red-black keeping track of complex rules of colors .
+
+## axioms about bbst :
+- height = number of levels between the node and its descendant leaf node.
+
+- given the median algorithm that constructs the bbst we can say that height of any node 
+is going to be O(log n) because the array gets shrunk down to half of its size each level .
+and a level is incremented on each shrink then the number of shrinks = height and height .
+so h = n_of_shrinks < - this is O(log n).
+
+## entailments of its height being O(log n)
+- we can iterate over all nodes on a particular height path with no complexity problems as 
+O(log n) is a good time complexity and probably the best here .
+
+Delete algorithms pseudocode :
+- delete the node 
+- sort the node back into normal binary search tree form
+- rebalance it according to avl properties. 
+
+Substitutions / rotations :
+- parent/right rotation : 
+        the right element of the parent becomes the parent element itself and 
+its left pointer becomes the left pointer of the original parent element and the right
+pointer is left untouched.now you have to do left/parent rotation on each right element 
+untill you hit a parent element that does not have a left element ( this is our terminating condition ).
+
+KEY POINTS OF parent/right rotation :
+- you'll need two pointers
+- one of the precedingNode or parentNode
+- one of its rightChildNode.
+
+- leftParent/right roations :
+        the left element of the parent element is assigned to the left of the right 
+child element .

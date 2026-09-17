@@ -53,18 +53,18 @@ function mergeSort(arr) {
 
   return sortedArray;
 }
-function createHugeArr(n) {
-  let arr = new Array(n);
+// function createHugeArr(n) {
+//   let arr = new Array(n);
 
-  for (let i = 0; i < arr.length; i++) {
-    arr[i] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-  }
+//   for (let i = 0; i < arr.length; i++) {
+//     arr[i] = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+//   }
 
-  return arr;
-}
+//   return arr;
+// }
 
-let hugeArr = createHugeArr(1000000);
-// it keeps trhowing an error saying invalid array length for bbigger numbers for some reason?.
-console.log(mergeSort(hugeArr));
+// let hugeArr = createHugeArr(1000000);
+// // it keeps trhowing an error saying invalid array length for bbigger numbers for some reason?.
+// console.log(mergeSort(hugeArr));
 
 export default mergeSort;
