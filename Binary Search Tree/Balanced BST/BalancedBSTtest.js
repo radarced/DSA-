@@ -1,5 +1,4 @@
 import Tree from "./BalancedBST.js";
-import { Queue, QueueNode } from "../Queue.js";
 
 function createHugeArr(n) {
   let arr = new Array(n);
@@ -21,30 +20,6 @@ function prettyPrint(node, prefix = "", isLeft = true) {
     `${prefix}${isLeft ? "└── " : "┌── "}${node.data};h=${node.height}`,
   );
   prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
-}
-
-function DFS(node) {
-  let isLeftEmpty = node.left === null;
-  let isRightEmpty = node.right === null;
-
-  if (node === null) {
-    return [];
-  }
-  if (isLeftEmpty && isRightEmpty) {
-    return [node];
-  }
-  // its not a leaf node
-  let array = [];
-  array.push(node);
-  let leftSubtreeArray = [];
-  let rightSubtreeArray = [];
-  if (!isLeftEmpty) {
-    leftSubtreeArray = DFS(node.left);
-  }
-  if (!isRightEmpty) {
-    rightSubtreeArray = DFS(node.right);
-  }
-  return array.concat(leftSubtreeArray, rightSubtreeArray);
 }
 
 function BFS(rootNode, callback) {
@@ -94,12 +69,25 @@ prettyPrint(testBBST.root);
 // prettyPrint(a);
 for (let i = 2; i > -20; i--) {
   testBBST.insert(i);
-  console.log(`PRETTY PRINT AT ${i} = `);
-  prettyPrint(testBBST.root);
+  console.log(testBBST.isBalanced());
 }
 
-testBBST.deleteItem(20);
-// prettyPrint(testBBST.root);
+prettyPrint(testBBST.root);
 
-testBBST.insert(-20);
-// prettyPrint(testBBST.root);
+// test for the traversal methods
+// testBBST.inOrderForEach((a) => {
+//   console.log(a.data, ",");
+// });
+// testBBST.postOrderForEach((a) => {
+//   console.log(a.data, ",");
+// });
+// testBBST.preOrderForEach((a) => {
+//   console.log(a.data, ",");
+// });
+// testBBST.levelOrderForEach((a) => {
+//   console.log(a.data, ",");
+// }); each works according to their respective orders .
+
+// test for the smaller helper methods .
+// console.log(testBBST.height(0)); works based upon this very specific test
+// console.log(testBBST.depth(-19));

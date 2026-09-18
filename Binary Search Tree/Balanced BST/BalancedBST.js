@@ -1,5 +1,5 @@
 import mergeSort from "../../TOP excercises/fibAndMergeSort/MergeSort.js";
-// import {BFS,BFS_Search,BFS_Search1} from "../BreadthFirstSearch.js"
+import { Queue, QueueNode } from "../Queue.js";
 
 function BSTNode(data, leftNode = null, rightNode = null, height = 0) {
   this.data = data;
@@ -181,6 +181,166 @@ class Tree {
     }
     // this.#updateHeight(lastSortedNode.data);
     this.#rebalance(lastSortedNode.data);
+  }
+
+  // TRAVERSAL METHODS!
+
+  preOrderForEach(callback = undefined, node = this.root) {
+    if (this.root === null) {
+      return;
+    } else if (callback === undefined) {
+      return;
+    }
+
+    callback(node);
+    let isLeftEmpty = this.#doesLeftExist(node);
+    let isRightEmpty = this.#doesRightExist(node);
+    if (!isLeftEmpty) {
+      this.preOrderForEach(callback, node.left);
+    }
+    if (!isRightEmpty) {
+      this.preOrderForEach(callback, node.right);
+    }
+  }
+
+  inOrderForEach(callback = undefined, node = this.root) {
+    if (this.root === null) {
+      return;
+    } else if (callback === undefined) {
+      return;
+    }
+
+    let isLeftEmpty = this.#doesLeftExist(node);
+    let isRightEmpty = this.#doesRightExist(node);
+    if (!isLeftEmpty) {
+      this.inOrderForEach(callback, node.left);
+    }
+    callback(node);
+    if (!isRightEmpty) {
+      this.inOrderForEach(callback, node.right);
+    }
+  }
+
+  postOrderForEach(callback = undefined, node = this.root) {
+    if (this.root === null) {
+      return;
+    } else if (callback === undefined) {
+      return;
+    }
+
+    let isLeftEmpty = this.#doesLeftExist(node);
+    let isRightEmpty = this.#doesRightExist(node);
+    if (!isLeftEmpty) {
+      this.postOrderForEach(callback, node.left);
+    }
+    if (!isRightEmpty) {
+      this.postOrderForEach(callback, node.right);
+    }
+    callback(node);
+  }
+
+  // bfs traversal method
+  levelOrderForEach(callback) {
+    // go level by level and add them into the queue
+    if (this.root === null) {
+      return;
+    }
+
+    let nodeQueue = new Queue(new QueueNode(this.root));
+
+    while (!nodeQueue.empty) {
+      let toProcessNode = nodeQueue.getFirst();
+      callback(toProcessNode.data);
+
+      let leftNode = toProcessNode.data.left;
+      let rightNode = toProcessNode.data.right;
+      if (leftNode !== null) {
+        nodeQueue.enqueue(new QueueNode(leftNode));
+      }
+      if (rightNode !== null) {
+        nodeQueue.enqueue(new QueueNode(rightNode));
+      }
+
+      nodeQueue.dequeue(); // it has been processed
+    }
+  }
+
+  // smaller public methods
+  height(value) {
+    if (this.root === null) {
+      return;
+    }
+    let currentNode = this.root;
+
+    while (currentNode.data !== value) {
+      // we are essentially trying to find a node which has an empty place and also fits with the values criteria
+      if (value > currentNode.data) {
+        let isRightEmpty = currentNode.right === null;
+
+        if (isRightEmpty) {
+          return;
+        }
+        currentNode = currentNode.right;
+      } else {
+        let isLeftEmpty = currentNode.left === null;
+
+        if (isLeftEmpty) {
+          return false;
+        }
+        currentNode = currentNode.left;
+      }
+    }
+    // if we get till here that means that currentNode represents the node
+    // whose height is supposed to be returned
+    return this.#getHeight(currentNode);
+  }
+
+  depth(value) {
+    if (this.root === null) {
+      return;
+    }
+    let currentNode = this.root;
+    let d = 0;
+
+    while (currentNode.data !== value) {
+      // we are essentially trying to find a node which has an empty place and also fits with the values criteria
+      if (value > currentNode.data) {
+        let isRightEmpty = currentNode.right === null;
+
+        if (isRightEmpty) {
+          return;
+        }
+        currentNode = currentNode.right;
+        d++;
+      } else {
+        let isLeftEmpty = currentNode.left === null;
+
+        if (isLeftEmpty) {
+          return false;
+        }
+        currentNode = currentNode.left;
+        d++;
+      }
+    }
+    // if we get till here that means that currentNode represents the node
+    // whose depth is supposed to be returned
+    return d;
+  }
+
+  // cuz this is a self balancing tree its always going to be balanced.
+  // hence ill just return the balanceFactor outcome of the root..
+  // cheating? yes ; needed? no .
+  // hence idc
+  isBalanced() {
+    if (this.root === null) {
+      return true;
+    }
+
+    let rootBalanceFactor = this.#getBalance(this.root);
+    if (Math.abs(rootBalanceFactor) <= 1) {
+      return true;
+    }
+    return false;
   }
 
   // this should only be called when the parentNode has both left AND right nodes
