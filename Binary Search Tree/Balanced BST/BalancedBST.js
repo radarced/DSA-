@@ -105,7 +105,7 @@ class Tree {
         }
       }
     }
-    this.#updateHeight(value);
+    // this.#updateHeight(value); rebalance updates the heights on the height paths as it traverses anyway so doing it before is just useless because it doesnt accurately dictate current state.
     this.#rebalance(value);
   }
 
@@ -179,7 +179,7 @@ class Tree {
       // in this case every rightNode after currentNode goes 1 level higher and their left's becomes their parents lefts.
       lastSortedNode = this.#sortDeletion(precedingNode, subNodeDirection);
     }
-    this.#updateHeight(lastSortedNode.data);
+    // this.#updateHeight(lastSortedNode.data);
     this.#rebalance(lastSortedNode.data);
   }
 
@@ -224,17 +224,21 @@ class Tree {
         // the childNode hence its larger than the leftNode of the childNode
         // so just add the detached leftNode to the left of the subsequentNode
         subsequentNode.left = parentLeftNode;
+        // ^ so in this case there can be an imbalanced tree
         break;
       }
       if (!isRightEmpty && isLeftEmpty) {
         // if only right exists.
         subsequentNode.left = parentLeftNode;
+        // ^^ amazing so this can also cause an imbalance in the subtree nodes.
         break;
       }
       if (!isLeftEmpty && isRightEmpty) {
         // cuz right is always going to be bigger than the left subtree
         subsequentNode.right = subsequentNode.left;
         subsequentNode.left = parentLeftNode;
+        // ^^ amazing so this can also cause an imbalance in the subtree nodes.
+
         break;
       }
       if (!isLeftEmpty && !isRightEmpty) {
@@ -313,21 +317,6 @@ class Tree {
     }
   }
 
-  #getHeight(node) {
-    let isRightEmpty = node.right === null;
-    let isLeftEmpty = node.left === null;
-
-    if (isLeftEmpty && isRightEmpty) {
-      // if leaf node
-      return 0;
-    }
-
-    let rightHeight = isRightEmpty ? 0 : node.right.height;
-    let leftHeight = isLeftEmpty ? 0 : node.left.height;
-
-    return 1 + Math.max(rightHeight, leftHeight);
-  }
-
   // takes in a node
   // rebalances with the bottom up appraoch .
   // balancing the sub trees first and moving on till you reach the root el .
@@ -361,28 +350,268 @@ class Tree {
         }
       }
     }
+    // pushes the last node in.
     nodesHeightStack.push(currentNode);
-
     // go through the possible rebalancable nodes stack and do rotations on them if required.
     for (let i = nodesHeightStack.length - 1; i >= 0; i--) {
       let node = nodesHeightStack[i];
-      let isLeftEmpty = currentNode.left === null;
-      let isRightEmpty = currentNode.right === null;
-
-      let rightHeight = isRightEmpty ? 0 : node.right.height;
-      let leftHeight = isLeftEmpty ? 0 : node.left.height;
-
-      let balanceFactor = leftHeight - rightHeight;
-      if (balanceFactor > 1 || balanceFactor < -1) {
-        console.log("caught ABSURD BALANCE FACTOR : ", balanceFactor);
+      let parentNode; // this is the parentNode which contains the currentNode or in this "node".
+      if (i === 0) {
+        // nodesHeightStack[0] is always the root Element
+        parentNode = this.root;
+      } else {
+        parentNode = nodesHeightStack[i - 1];
       }
 
+      let balanceFactor = this.#getBalance(node);
+
+      // so theres never a bigger difference than 1 and smaller differece than -1 between the subtree's heights
       if (balanceFactor > 1) {
         // left heavy
+        // console.log("NEED OF left right rotation");
+        // console.log(node, parentNode, balanceFactor);
+        this.#left_right_rotation(parentNode, node); // takes 1 el from leftSubtree and adds it to the right subtree.
+
+        // prettyPrint(this.root);
       } else if (balanceFactor < -1) {
         // right heavy
+        // console.log("NEED OF right left rotation");
+        this.#right_left_rotation(parentNode, node); // takes 1 el froim rightSubtree and adds it to the left subtree
+        // prettyPrint(this.root);
       }
+
+      node.height = this.#getHeight(node);
     }
   }
+
+  // this function assumes that theres atleast 2 elements on the left subtree of the given node .
+  // this function changes the height of the given Node and its topLeft node.
+  #left_right_rotation(parentNode, node) {
+    // take the top left node out .
+    // take the temp of parentNode .
+    let childNode;
+    if (node === this.root) {
+      // we're on the root el
+      this.root = node.left;
+      childNode = node.left;
+    } else {
+      // ordinary elements
+
+      let childNodeDirection = "right";
+      if (node.data < parentNode.data) {
+        childNodeDirection = "left";
+      }
+      // console.log(parentNode, node, childNodeDirection);
+      parentNode[childNodeDirection] = node.left; // the nodes left node becomes the node moves a level up.
+      childNode = parentNode[childNodeDirection];
+    }
+
+    // left side manipulation
+    // node is detached .
+
+    let isRightEmpty = childNode.right === null;
+    let isLeftEmpty = childNode.left === null;
+    console.log(childNode, childNode.right, childNode.left);
+
+    if (!isRightEmpty && isLeftEmpty) {
+      childNode.left = childNode.right;
+      // in this case it'll always turn out balanced
+    } else if (!isRightEmpty && !isLeftEmpty) {
+      // this means that we're in the deep subtree territory.
+      // if both right and left exist
+      // because we're essentially going to be creating a "new" subtree in the left detached place .
+      // we have to keep in mind that it can be imbalanced hence we have to check the balance of them and act accordingly.
+      let a = this.constructTree_fromSubtrees(
+        childNode.left,
+        childNode.right,
+        childNode,
+      );
+      prettyPrint(a);
+      childNode.left = a;
+    }
+    // the other cases are handled naturally
+
+    // right side manipulation
+    // node is attached back!
+    childNode.right = node; // one of the operations in left_rightRotation which always happens
+    node.left = null; // this will be the case no matter what .
+
+    childNode = this.#getHeight(childNode);
+  }
+
+  // this function assumes that theres atleast 2 elements on the right subtree of the given node .
+  // this function changes the height of the given Node and its topRight node.
+  #right_left_rotation(parentNode, node) {
+    // take the top left node out .
+    // take the temp of parentNode .
+    let childNode;
+    if (node === this.root) {
+      // we're on the root el
+      this.root = node.right;
+      childNode = node.right;
+    } else {
+      // ordinary elements
+      let childNodeDirection = "right";
+      if (node.data < parentNode.data) {
+        childNodeDirection = "left";
+      }
+      parentNode[childNodeDirection] = node.right; // the nodes left node becomes the node moves a level up.
+      childNode = parentNode[childNodeDirection];
+    }
+    // ^^ this is just for pointer logic .
+
+    // left side manipulation
+    // node is detached .
+
+    let isRightEmpty = childNode.right === null;
+    let isLeftEmpty = childNode.left === null;
+    if (!isLeftEmpty && isRightEmpty) {
+      childNode.right = childNode.left;
+      // in this case it'll always turn out balanced
+    } else if (!isRightEmpty && !isLeftEmpty) {
+      // this means that we're in the deep subtree territory.
+      // if both right and left exist
+      // because we're essentially going to be creating a "new" subtree in the left detached place .
+      // we have to keep in mind that it can be imbalanced hence we have to check the balance of them and act accordingly.
+      let a = this.constructTree_fromSubtrees(
+        childNode.left,
+        childNode.right,
+        childNode,
+      );
+      console.log("CONSTRUCTED TREE NODE : ", a);
+
+      childNode.right = a;
+    }
+    // the other cases are handled naturally
+
+    // right side manipulation
+    childNode.left = node; // one of the operations in left_rightRotation which always happens
+    node.right = null; // this will be the case no matter what .
+    // state is cluttered across the functions but whatever.
+    childNode.height = this.#getHeight(childNode);
+  }
+
+  #getHeight(node) {
+    let isRightEmpty = node.right === null;
+    let isLeftEmpty = node.left === null;
+
+    if (isLeftEmpty && isRightEmpty) {
+      // if leaf node
+      return 0;
+    }
+
+    let rightHeight = isRightEmpty ? 0 : node.right.height;
+    let leftHeight = isLeftEmpty ? 0 : node.left.height;
+
+    return 1 + Math.max(rightHeight, leftHeight);
+  }
+
+  #getBalance(node) {
+    let isRightEmpty = node.right === null;
+    let isLeftEmpty = node.left === null;
+
+    if (isLeftEmpty && isRightEmpty) {
+      // if leaf node
+      return 0;
+    }
+    let rightHeight = isRightEmpty ? 0 : 1 + node.right.height;
+    let leftHeight = isLeftEmpty ? 0 : 1 + node.left.height;
+
+    return leftHeight - rightHeight; // if 2 or -2 then its a problem
+  }
+
+  // we assume that the given Whole tree is a bbst
+  // this function assumes that leftSubtree and rightSubtree arent empty
+  // returns a node which connects both of the lower level nodes .
+  // its meant to put one of the subtrees 1 level higher and return that.
+  constructTree_fromSubtrees(leftSubtree, rightSubtree, parentNode) {
+    let balanceFactor = this.#getBalance(parentNode);
+
+    switch (balanceFactor) {
+      case 1:
+        // leftSubtree has at minimum 2 elements based on the assumptions
+        // left-heavy hence left is going to be the parentNode / precedingNode.
+        let isLeftSubtreeLeftEmpty = this.#doesLeftExist(leftSubtree);
+        let isLeftSubtreeRightEmpty = this.#doesRightExist(leftSubtree);
+        console.log(
+          leftSubtree,
+          rightSubtree,
+          isLeftSubtreeLeftEmpty,
+          isLeftSubtreeRightEmpty,
+        );
+        if (!isLeftSubtreeLeftEmpty && !isLeftSubtreeRightEmpty) {
+          // then we recursively call itself till we reach a condition where one of its subtrees are empty
+          leftSubtree.left = this.constructTree_fromSubtrees(
+            leftSubtree.left,
+            leftSubtree.right,
+            leftSubtree,
+          );
+          leftSubtree.right = rightSubtree; // in all conditions this happens
+          leftSubtree.height = this.#getHeight(leftSubtree); // cuz of recursion this works
+        } else if (!isLeftSubtreeRightEmpty && isLeftSubtreeLeftEmpty) {
+          // if its left is empty
+          leftSubtree.left = leftSubtree.right;
+          leftSubtree.right = rightSubtree; // in all conditions this happens
+        } else {
+          leftSubtree.right = rightSubtree; // in all conditions this happens
+        }
+
+        return leftSubtree;
+        break;
+      case 0: // < - goes through the same code as case -1 cuz right looks better for convention.
+      // reminder both right and left Subtrees are not empty
+      case -1:
+        // rightSubtree has at minimum 2 elements based on the assumptions
+        // right-heavy hence left is going to be the parentNode / precedingNode.
+        let isRightSubtreeLeftEmpty = this.#doesLeftExist(rightSubtree);
+        let isRightSubtreeRightEmpty = this.#doesRightExist(rightSubtree);
+
+        if (!isRightSubtreeLeftEmpty && !isRightSubtreeRightEmpty) {
+          // then we recursively call itself till we reach a condition where one of its subtrees are empty
+          rightSubtree.right = this.constructTree_fromSubtrees(
+            rightSubtree.left,
+            rightSubtree.right,
+            rightSubtree,
+          );
+          rightSubtree.left = leftSubtree; // in all conditions this happens
+          rightSubtree.height = this.#getHeight(rightSubtree); // cuz of recursion this works
+        } else if (!isRightSubtreeLeftEmpty && isRightSubtreeRightEmpty) {
+          // if its right is empty and left exists
+          rightSubtree.right = rightSubtree.left;
+          rightSubtree.left = leftSubtree; // in all conditions this happens
+        } else {
+          rightSubtree.left = leftSubtree; // in all conditions this happens
+        }
+
+        return rightSubtree;
+        break;
+    }
+  }
+
+  #doesLeftExist(node) {
+    return node.left === null;
+  }
+
+  #doesRightExist(node) {
+    return node.right === null;
+  }
 }
+
 export default Tree;
+// so one of the core themes / repetitive functionalities that ive seen is :
+// construction of a tree based upon two subtrees between which there is valid balance
+// factor . so we're essentially going to construct a common tree / node from these subtrees
+// in such a way that theyre valid .
+// for this you choose the top left or top right node of the subtrees depending on whos the superior
+// one.
+function prettyPrint(node, prefix = "", isLeft = true) {
+  if (node === null || node === undefined) {
+    return;
+  }
+
+  prettyPrint(node.right, `${prefix}${isLeft ? "│   " : "    "}`, false);
+  console.log(
+    `${prefix}${isLeft ? "└── " : "┌── "}${node.data};h=${node.height}`,
+  );
+  prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
+}

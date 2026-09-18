@@ -28,12 +28,32 @@ const testArray = [
 ];
 
 let testBBST = new Tree(testArray);
-// console.log(testBBST.includes(10));
-prettyPrint(testBBST.root);
+// testBBST.insert(1);
+// // prettyPrint(testBBST.root);
+// testBBST.insert(2);
+// // prettyPrint(testBBST.root);
+// testBBST.insert(3);
+// // prettyPrint(testBBST.root);
+// testBBST.insert(4);
+// // prettyPrint(testBBST.root);
 
+// testBBST.insert(5);
+
+// console.log(testBBST.includes(10));
+// let a = testBBST.constructTree_fromSubtrees(
+//   testBBST.root.left,
+//   testBBST.root.right,
+//   testBBST.root,
+// );
+// prettyPrint(a);
 for (let i = 2; i > -20; i--) {
   testBBST.insert(i);
+  console.log(`PRETTY PRINT AT ${i} = `);
+  prettyPrint(testBBST.root);
 }
 
 testBBST.deleteItem(20);
+prettyPrint(testBBST.root);
+
+testBBST.insert(-20);
 prettyPrint(testBBST.root);

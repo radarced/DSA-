@@ -1,0 +1,16 @@
+this file contains an explanation of the principles that the rebalance function
+works upon .
+
+in a balanced bst deletion or insertion always leaves the nodes of the subtree with a balance
+factor of |2|.
+^ ig its just because of the nature of the bbst and how deletion operations are done on them .
+
+insertion / deletion ( the only tree manipulating functions ) would cause the nodes that are
+related to the lastNode that was "manipulated" to be unbalanced everything else remains untouched.
+
+in other words the only nodes that are affected and could be unbalanced are those that are on
+the depth path of the lastInvolvedNode .
+
+for a bst to be balanced .
+- both left and right subtrees must be bbst's themselves .
+- the balance factor of the root node must not be |2|.
