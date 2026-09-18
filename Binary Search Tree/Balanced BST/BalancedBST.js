@@ -300,7 +300,7 @@ class Tree {
         let isLeftEmpty = currentNode.left === null;
 
         if (isLeftEmpty) {
-          console.log(`node with the given value ${value} doesnt exist`);
+          `node with the given value ${value} doesnt exist`;
           return;
         } else {
           nodesHeightStack.push(currentNode);
@@ -368,127 +368,176 @@ class Tree {
       // so theres never a bigger difference than 1 and smaller differece than -1 between the subtree's heights
       if (balanceFactor > 1) {
         // left heavy
-        // console.log("NEED OF left right rotation");
-        // console.log(node, parentNode, balanceFactor);
-        this.#left_right_rotation(parentNode, node); // takes 1 el from leftSubtree and adds it to the right subtree.
+        // in this case there's atleast 2 nodes on the left side
+        // leftNode's balance will either be 1 or -1 for the parent element to be left heavy there needs to
+        // be 1 more element on the left subtree and in extension of the left subtrees subtrees .
+
+        let leftNode = node.left;
+        let leftNodeBalance = this.#getBalance(leftNode);
+        // console.log(parentNode, node, leftNode);
+        if (leftNodeBalance === 1) {
+          this.#left_left_rotation(parentNode, node);
+        } else if (leftNodeBalance === -1) {
+          this.#left_right_rotation(parentNode, node); // takes 1 el from leftSubtree and adds it to the right subtree.
+        }
+
+        // console.log(parentNode, node, leftNode);
 
         // prettyPrint(this.root);
       } else if (balanceFactor < -1) {
         // right heavy
-        // console.log("NEED OF right left rotation");
-        this.#right_left_rotation(parentNode, node); // takes 1 el froim rightSubtree and adds it to the left subtree
-        // prettyPrint(this.root);
+        let rightNode = node.left;
+        let rightNodeBalance = this.#getBalance(rightNode);
+
+        // console.log(parentNode, node, rightNode);
+
+        if (rightNodeBalance === 1) {
+          this.#right_left_rotation(parentNode, node);
+        } else if (rightNodeBalance === -1) {
+          this.#right_right_rotation(parentNode, node); // takes 1 el from leftSubtree and adds it to the right subtree.
+        } // prettyPrint(this.root);
+        // console.log(parentNode, node, rightNode);
       }
 
       node.height = this.#getHeight(node);
     }
   }
 
-  // this function assumes that theres atleast 2 elements on the left subtree of the given node .
-  // this function changes the height of the given Node and its topLeft node.
-  #left_right_rotation(parentNode, node) {
-    // take the top left node out .
-    // take the temp of parentNode .
-    let childNode;
+  // leftSubtree and leftSubtree.left exists.
+  // node is our "P" element parentNode is just there for pointer mechanics.
+  #left_left_rotation(parentNode, node) {
+    let leftSubtree;
     if (node === this.root) {
       // we're on the root el
       this.root = node.left;
-      childNode = node.left;
+      leftSubtree = node.left;
     } else {
       // ordinary elements
 
-      let childNodeDirection = "right";
+      let childNodeDirection = "right"; // purely exists for pointer mechanics
       if (node.data < parentNode.data) {
         childNodeDirection = "left";
       }
       // console.log(parentNode, node, childNodeDirection);
       parentNode[childNodeDirection] = node.left; // the nodes left node becomes the node moves a level up.
-      childNode = parentNode[childNodeDirection];
+      leftSubtree = parentNode[childNodeDirection];
     }
+    // P is detached from the tree
+    // in P's place is now LeftSubtree (also detached).
+    let isRightEmpty = this.#doesRightExist(leftSubtree);
 
-    // left side manipulation
-    // node is detached .
-
-    let isRightEmpty = childNode.right === null;
-    let isLeftEmpty = childNode.left === null;
-    console.log(childNode, childNode.right, childNode.left);
-
-    if (!isRightEmpty && isLeftEmpty) {
-      childNode.left = childNode.right;
-      // in this case it'll always turn out balanced
-    } else if (!isRightEmpty && !isLeftEmpty) {
-      // this means that we're in the deep subtree territory.
-      // if both right and left exist
-      // because we're essentially going to be creating a "new" subtree in the left detached place .
-      // we have to keep in mind that it can be imbalanced hence we have to check the balance of them and act accordingly.
-      let a = this.constructTree_fromSubtrees(
-        childNode.left,
-        childNode.right,
-        childNode,
-      );
-      prettyPrint(a);
-      childNode.left = a;
-    }
-    // the other cases are handled naturally
-
-    // right side manipulation
-    // node is attached back!
-    childNode.right = node; // one of the operations in left_rightRotation which always happens
-    node.left = null; // this will be the case no matter what .
-
-    childNode = this.#getHeight(childNode);
+    node.left = null;
+    if (!isRightEmpty) {
+      node.left = leftSubtree.right;
+    } // ^^ the only case where right would be empty and this would be called
+    // would be be when theres 2 els on the left of P and 0 on the right so no extra stuff needed.
+    leftSubtree.right = node; // attach it back
+    node.height = this.#getHeight(node);
+    leftSubtree.height = this.#getHeight(leftSubtree);
   }
 
-  // this function assumes that theres atleast 2 elements on the right subtree of the given node .
-  // this function changes the height of the given Node and its topRight node.
-  #right_left_rotation(parentNode, node) {
-    // take the top left node out .
-    // take the temp of parentNode .
-    let childNode;
+  // this function assumes that theres atleast 2 elements on the left subtree of the given node .
+  // node represents our "P" element
+  #left_right_rotation(parentNode, node) {
+    let leftSubtree;
     if (node === this.root) {
       // we're on the root el
-      this.root = node.right;
-      childNode = node.right;
+      this.root = node.left;
+      leftSubtree = node.left;
     } else {
       // ordinary elements
-      let childNodeDirection = "right";
+
+      let childNodeDirection = "right"; // purely exists for pointer mechanics
       if (node.data < parentNode.data) {
         childNodeDirection = "left";
       }
+      parentNode[childNodeDirection] = node.left; // the nodes left node becomes the node moves a level up.
+      leftSubtree = parentNode[childNodeDirection];
+    }
+    // P is detached from the tree
+    // in P's place is now LeftSubtree (also detached).
+    let isLeftEmpty = this.#doesRightExist(leftSubtree);
+
+    node.left = null;
+    if (!isLeftEmpty) {
+      node.left = leftSubtree.left;
+    } // ^^ the only case where right would be empty and this would be called
+    // would be be when theres 2 els on the left of P and 0 on the right so no extra stuff needed.
+    leftSubtree.left = leftSubtree.right;
+    leftSubtree.right = node; // attach it back
+    // updating the height
+    node.height = this.#getHeight(node);
+    leftSubtree.height = this.#getHeight(leftSubtree);
+  }
+
+  // assumes theres two elements on the right of the node
+  // node represents our "P" element.
+  #right_right_rotation(parentNode, node) {
+    let rightSubtree;
+    if (node === this.root) {
+      // we're on the root el
+      this.root = node.right;
+      rightSubtree = node.right;
+    } else {
+      // ordinary elements
+
+      let childNodeDirection = "right"; // purely exists for pointer mechanics
+      if (node.data < parentNode.data) {
+        childNodeDirection = "left";
+      }
+      // console.log(parentNode, node, childNodeDirection);
       parentNode[childNodeDirection] = node.right; // the nodes left node becomes the node moves a level up.
-      childNode = parentNode[childNodeDirection];
+      rightSubtree = parentNode[childNodeDirection];
     }
-    // ^^ this is just for pointer logic .
+    // P is detached from the tree
+    // in P's place is now rightSubtree (also detached).
+    let isLeftEmpty = this.#doesRightExist(rightSubtree);
 
-    // left side manipulation
-    // node is detached .
+    node.right = null;
+    if (!isLeftEmpty) {
+      node.right = rightSubtree.left;
+    } // ^^ the only case where right would be empty and this would be called
+    // would be be when theres 2 els on the left of P and 0 on the right so no extra stuff needed.
+    rightSubtree.left = node; // attach it back
 
-    let isRightEmpty = childNode.right === null;
-    let isLeftEmpty = childNode.left === null;
-    if (!isLeftEmpty && isRightEmpty) {
-      childNode.right = childNode.left;
-      // in this case it'll always turn out balanced
-    } else if (!isRightEmpty && !isLeftEmpty) {
-      // this means that we're in the deep subtree territory.
-      // if both right and left exist
-      // because we're essentially going to be creating a "new" subtree in the left detached place .
-      // we have to keep in mind that it can be imbalanced hence we have to check the balance of them and act accordingly.
-      let a = this.constructTree_fromSubtrees(
-        childNode.left,
-        childNode.right,
-        childNode,
-      );
-      console.log("CONSTRUCTED TREE NODE : ", a);
+    // heights updates
+    node.height = this.#getHeight(node);
+    rightSubtree.height = this.#getHeight(rightSubtree);
+  }
 
-      childNode.right = a;
+  // this function assumes that theres atleast 2 elements on the right subtree of the given node .
+  #right_left_rotation(parentNode, node) {
+    let rightSubtree;
+    if (node === this.root) {
+      // we're on the root el
+      this.root = node.right;
+      rightSubtree = node.right;
+    } else {
+      // ordinary elements
+
+      let childNodeDirection = "right"; // purely exists for pointer mechanics
+      if (node.data < parentNode.data) {
+        childNodeDirection = "left";
+      }
+      // console.log(parentNode, node, childNodeDirection);
+      parentNode[childNodeDirection] = node.right; // the nodes left node becomes the node moves a level up.
+      rightSubtree = parentNode[childNodeDirection];
     }
-    // the other cases are handled naturally
+    // P is detached from the tree
+    // in P's place is now rightSubtree (also detached).
+    let isRightEmpty = this.#doesRightExist(rightSubtree);
 
-    // right side manipulation
-    childNode.left = node; // one of the operations in left_rightRotation which always happens
-    node.right = null; // this will be the case no matter what .
-    // state is cluttered across the functions but whatever.
-    childNode.height = this.#getHeight(childNode);
+    node.right = null;
+    if (!isRightEmpty) {
+      node.right = rightSubtree.right;
+    } // ^^ the only case where right would be empty and this would be called
+    // would be be when theres 2 els on the left of P and 0 on the right so no extra stuff needed.
+    rightSubtree.right = rightSubtree.left;
+    rightSubtree.left = node; // attach it back
+
+    // heights updates
+    node.height = this.#getHeight(node);
+    rightSubtree.height = this.#getHeight(rightSubtree);
   }
 
   #getHeight(node) {
