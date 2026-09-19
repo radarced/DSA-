@@ -1,0 +1,37 @@
+a graph is a container whose data structure is graph based meaning it contains
+nodes as the container of the actual data which hold pointers to the next nodes .
+
+we can construct the knightMoves as a graph as well .
+where each node represents the moves that a knight could make entailing from one 
+common node / move .
+
+hence this becomes a graph traversal problem where you have to find the node 
+where node is the desiredPosition .
+
+ill use a bfs algorithm for this .
+for each move ill check all its possibleMoves and whether they are valid .
+and for each invalid possibleMove ill add their subNodes into the queue meaning they are
+to processed next < - these could be represented as the level container which 
+contains the nodes / moves at the next level .
+
+variables :
+- pathsArray ( contains all the paths that are taken of the knightMoves graph till we 
+reach the desiredNode).
+- shortestPaths ( contains linked lists which represents the shortest paths
+that the knight must take to reach the desiredNode ).
+
+question :
+- how do i keep track of my paths?.
+- ^ a linked list seems to match the pattern but ill constantly need to duplicate
+it to create the subNodes path of a parent node .
+- if a node is found to be valid then what?.
+
+answer 1 :
+ill store a linkedList for each path inside a "paths array" 
+
+answer 3 :
+if a node is valid then we wont enqueue the next level nodes of that subNode 
+as well as assuming im keeping track of my paths ill store the depth of that path 
+in a variable which will be used to check the subsequent leftOver nodesToBeProcessed's
+depth that whether or not theyre equal to the previous depth if so theyre allowed
+to be a completed answer if not then no .

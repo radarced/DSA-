@@ -6,7 +6,8 @@ class LinkedList
   {
     this.empty = false;
     this.listSize = 0;
-    
+    this.last = null;
+
     if(firstNode === undefined)
     {
       this.first = null;
@@ -19,6 +20,28 @@ class LinkedList
     }
   }
 
+  // takes an array and constructs the linkedList in accordance to the order of the array
+  constructArray(array)
+  { 
+    this.empty = true;
+    this.listSize = 0;
+    this.last = null;
+    this.first = null;
+
+    if(array === undefined)
+    {
+      return;
+    }
+    if(array.length === 0)
+    {
+      return;
+    } 
+    for(let value of array)
+    {
+      this.append(value);
+    }
+  }
+  
   // append adds a new node at the end of the list
   // value is data not a node
   append(value)
@@ -249,6 +272,25 @@ class LinkedList
     while(currentPointer !== null)
     {
       resultantArr.push(currentPointer);
+  
+      currentPointer = currentPointer.next;
+    }
+    return resultantArr;
+  }
+
+  toValues()
+  {
+    if(this.empty)
+    {
+      return []; 
+    }
+  
+    let currentPointer = this.first;
+    let resultantArr = [];
+
+    while(currentPointer !== null)
+    {
+      resultantArr.push(currentPointer.data);
   
       currentPointer = currentPointer.next;
     }
